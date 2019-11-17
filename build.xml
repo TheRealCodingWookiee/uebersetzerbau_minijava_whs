@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="minijava" default="minijava: parse" basedir=".">
+    
+    <!-- Verwendete Bibliotheken --> 
+    <property name="JAVACC_HOME"      value="lib/javacc-6.0"/>
+    <property name="JASMIN_HOME"      value="lib/jasmin-2.4"/>
+    
+    <!-- Eigenschaften des Parsers -->
+    <property name="src.dir"          value="src"/>
+    <property name="parser.dir"       value="${src.dir}/parser"/>
+    <property name="visitor.dir"      value="${src.dir}/visitor"/>
+    <property name="build.dir"        value="build"/>
+    <property name="classes.dir"      value="${build.dir}/classes"/>
+    <property name="jar.dir"          value="${build.dir}/jar"/>
+
+    <property name="parser-package"   value="parser"/>
+    <property name="parser-class"     value="MiniJavaParser"/>
+    
+    <!-- Eigenschaften für Minijava-Programme -->    
+    <property name="minijava.dir"     value="minijava"/>
+    <property name="mj_programs.dir"  value="${minijava.dir}/src"/>
+    <property name="mj_jasmin.dir"    value="${minijava.dir}/jasmin"/>
+    <property name="mj_classes.dir"   value="${minijava.dir}/classes"/>
+
+    <!-- ================================================================== -->
+    <!-- Minijava-Programm, mit dem getestet werden soll -->
+    
+    <!--<property name="mj_program"       value="${mj_programs.dir}/BinarySearch.mjava"/>-->
+    <!--<property name="mj_program"       value="${mj_programs.dir}/BinaryTree.mjava"/>-->
+    <!--<property name="mj_program"       value="${mj_programs.dir}/BubbleSort.mjava"/>-->
+    <property name="mj_program"       value="${mj_programs.dir}/Factorial.mjava"/>
+    <!--<property name="mj_program"       value="${mj_programs.dir}/LinearSearch.mjava"/>-->
+    <!--<property name="mj_program"       value="${mj_programs.dir}/LinkedList.mjava"/>-->
+    <!--<property name="mj_program"       value="${mj_programs.dir}/QuickSort.mjava"/>-->
+    <!--<property name="mj_program"       value="${mj_programs.dir}/TreeVisitor.mjava"/>-->
+    
+    
+    <!-- ================================================================== -->
+    <!-- Verzeichnisse mit generierten Dateien löschen -->
+    <target name="parser-clean">
+        <delete>
+            <fileset dir="${src.dir}/parser" excludes="*.jj"/>
+        </delete> 
+        <delete dir="${build.dir}" />
+        <delete dir="${classes.dir}" />
+        <delete dir="${jar.dir}" />
+    </target>
+    
+    <target name="minijava-clean">
+        <delete dir="${mj_jasmin.dir}" />
+        <delete dir="${mj_classes.dir}" />
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Erzeugen des Parsers aus der Grammatik -->
+    <target name="parser-javacc">
+        <javacc
+            target="${parser.dir}/${parser-class}.jj"
+            outputdirectory="${parser.dir}"
+            javacchome="${JAVACC_HOME}"
+            static="false"
+        />
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Übersetzen des Parsers -->
+    <target name="parser-javac" depends="parser-javacc">
+        <mkdir dir="${classes.dir}"/>
+        
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}" 
+               includeantruntime="false">
+        </javac>
+    </target>
+        
+    <!-- Erzeugen der jar-Datei des Parsers -->
+    <target name="parser-jar" depends="parser-javac">  
+        <mkdir dir="${jar.dir}"/>
+        
+        <jar jarfile="${jar.dir}/${ant.project.name}.jar" 
+             basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" 
+                           value="${parser-package}.${parser-class}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Parsen eines Minijava-Programms, erzeugt ab Blatt 4 Jasmin-Dateien (.j) -->
+    <target name="minijava-parse" depends="parser-jar">
+        <mkdir dir="${mj_jasmin.dir}"/>
+        
+        <java jar="${jar.dir}/${ant.project.name}.jar" fork="true">
+            <arg value="${mj_program}" />
+            <arg value="${mj_jasmin.dir}" />
+            <classpath>
+                <pathelement path="${classes.dir}"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Übersetzen der Jasmin-Datei (.j) in Java-Byte-Code (.class) -->
+    <target name="minijava-jasmin" depends="minijava-parse">
+        <mkdir dir="${mj_classes.dir}"/>
+        
+        <java jar="${JASMIN_HOME}/jasmin.jar" fork="true">
+            <arg value="-g" />
+            <arg value="-d" />
+            <arg value="${mj_classes.dir}" />
+            <arg value="${mj_jasmin.dir}/*.j" />
+        </java>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Ausführen der für ein Minijava-Programm erzeugten class-Dateien -->
+    <target name="minijava-run" depends="-info, minijava-clean, minijava-jasmin">
+        <basename property="mj_class" file="${mj_program}" suffix=".mjava" />
+        <java classname="${mj_class}" fork="true">
+            <classpath>
+                <pathelement path="${mj_classes.dir}"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <!-- ================================================================== -->
+    <!-- Gibt die Information aus, welches Programm aktuell behandelt wird. -->
+    <target name="-info">
+        <basename property="mj_filename" file="${mj_program}"/>
+        <echo message="- - - - - - - - - - - - - - - - - - - - - - - - -" />
+        <echo message="Teste ${mj_filename} ..."/>
+        <echo message="- - - - - - - - - - - - - - - - - - - - - - - - -" />
+    </target>
+    
+    <!-- ================================================================== -->
+    <!-- Erzeugt Javadoc für den Parser -->
+    <target name="parser: javadoc" >
+        <delete dir="javadoc" />
+        <javadoc sourcepath="src" 
+                 excludepackagenames="parser.*"
+                 destdir="javadoc" 
+                 private="true">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+        </javadoc>
+    </target>    
+</project>

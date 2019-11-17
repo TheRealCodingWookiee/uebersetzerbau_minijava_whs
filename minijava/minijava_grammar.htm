@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>MiniJava</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" LINK="#0000EE" VLINK="#0000EE">
+
+Die Definition von MiniJava wurde dem Buch "Modern Compiler
+Implementation in Java" von Andrew W. Appel (Cambridge University Press, 
+October 2002) entnommen.
+
+<H1>MiniJava</H1>
+
+MiniJava ist eine Teilmenge von Java. Die Semantik  eines MiniJava-Programms 
+wird durch die Semantik von Java-Programmen definiert. &Uuml;berladung von Methoden
+ist in MiniJava nicht erlaubt. Die MiniJava-Anweisung <code>System.out.println(...)</code> 
+kann nur auf Integerzahlen angewendet werden. Der MiniJava-Ausdruck <code>e.length</code> 
+kann nur auf Ausdr&uuml;cke des Typs <code>int[]</code> angewendet werden. 
+
+<H2>Lexikalische Struktur</H2>
+
+<b>Bezeichner</b>: Ein Bezeichner ist eine Folge von Buchstaben, Ziffern und 
+Unterstrichen. Die Folge muss mit einem Buchstaben beginnen. Gro&szlig;- und Kleinbuchstaben
+werden unterschieden. (In der BNF &uumal;r MiniJava steht <i>IDENTIFIER</i> f&uuml;r Bezeichner.)
+<p>
+<b>Integer-Literale</b>: Eine Folge von Ziffern ist eine Integer-Konstante, die
+die entsprechende Integerzahl darstellt. (In der BNF f&uuml;r MiniJava steht 
+<i>INTEGER_LITERAL</i> f&uuml;r eine Integer-Konstante.)
+<p>
+<b>Bin&auml;re Operatoren</b>: Bin&auml;re Operatoren sind <code>&&, <, +, - *</code>.
+<p>
+<b>Kommentare</b>: Ein Kommentar kann zwischen zwei beliebigen Token stehen. Es
+gibt zwei Arten von Kommentaren: Einzeilige Kommentare, die mit <code>//</code> 
+beginnen und bis zum Ende der Zeile gehen, und mehrzeilige Kommentare, die mit
+<code>/*</code>  beginnen und mit <code>*/</code> enden.  
+
+<H2>BNF f&uuml;r MiniJava</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">Goal</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod2">MainClass</A> ( <A HREF="#prod3">ClassDeclaration</A> )* &lt;EOF&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">MainClass</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"class" <A HREF="#prod4">Identifier</A> "{" "public" "static" "void" "main" "(" "String" "[" "]" <A HREF="#prod4">Identifier</A> ")" "{" <A HREF="#prod5">Statement</A> "}" "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">ClassDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"class" <A HREF="#prod4">Identifier</A> ( "extends" <A HREF="#prod4">Identifier</A> )? "{" ( <A HREF="#prod6">VarDeclaration</A> )* ( <A HREF="#prod7">MethodDeclaration</A> )* "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">VarDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod8">Type</A> <A HREF="#prod4">Identifier</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">MethodDeclaration</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"public" <A HREF="#prod8">Type</A> <A HREF="#prod4">Identifier</A> "(" ( <A HREF="#prod8">Type</A> <A HREF="#prod4">Identifier</A> ( "," <A HREF="#prod8">Type</A> <A HREF="#prod4">Identifier</A> )* )? ")" "{" ( <A HREF="#prod6">VarDeclaration</A> )* ( <A HREF="#prod5">Statement</A> )* "return" <A HREF="#prod9">Expression</A> ";" "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">Type</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"int" "[" "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"boolean"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"int"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">Statement</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"{" ( <A HREF="#prod5">Statement</A> )* "}"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"if" "(" <A HREF="#prod9">Expression</A> ")" <A HREF="#prod5">Statement</A> "else" <A HREF="#prod5">Statement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"while" "(" <A HREF="#prod9">Expression</A> ")" <A HREF="#prod5">Statement</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"System.out.println" "(" <A HREF="#prod9">Expression</A> ")" ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A> "=" <A HREF="#prod9">Expression</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A> "[" <A HREF="#prod9">Expression</A> "]" "=" <A HREF="#prod9">Expression</A> ";"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">Expression</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">Expression</A> ( "&amp;&amp;" | "&lt;" | "+" | "-" | "*" ) <A HREF="#prod9">Expression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">Expression</A> "[" <A HREF="#prod9">Expression</A> "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">Expression</A> "." "length"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">Expression</A> "." <A HREF="#prod4">Identifier</A> "(" ( <A HREF="#prod9">Expression</A> ( "," <A HREF="#prod9">Expression</A> )* )? ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;INTEGER_LITERAL&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"true"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"false"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod4">Identifier</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"this"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"new" "int" "[" <A HREF="#prod9">Expression</A> "]"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"new" <A HREF="#prod4">Identifier</A> "(" ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"!" <A HREF="#prod9">Expression</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"(" <A HREF="#prod9">Expression</A> ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">Identifier</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IDENTIFIER&gt;</TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>
