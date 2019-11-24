@@ -114,21 +114,343 @@ TOKEN : /*SCHLUESSELWOERTER*/
  *----------------------------------------------------------------------------*/
 
 /* Definiert ein Program als eine beliebige Folge von MiniJava-Tokens */
-void Program() :
+void Programm() :
 {}
 {
-    ( Token() )* <EOF>
+  MainClass()
+  ( TypeDeclarationUnordered() )*
+  <EOF>
 }
 
-/* Definiert MiniJava-Token als Vereinigung aller oben definierten Tokens */
-void Token():
+void MainClass() :
 {}
 {
-    // Geben Sie hier alle in der lexikalischen Spezifikation definierten Tokens 
-    // - getrennt durch "|" - ein. Durch die Option "DEBUG_PARSER = true;" (s.o.)
-    // zeigt der Parser alle eingelesenen Tokens an.
-    //
-    (
-       <LPAREN> | <RPAREN>
-    )
+    <CLASS> Identifier() <RBRACE>
+    <PUBLIC> <STATIC> <VOID> <MAIN> <LBRACE> <STRING> <LSQPAREN> <RSQPAREN> Identifier() <RBRACE>
+    <LBRACE> PrintStatement() <RBRACE>
+  <RBRACE>
+}
+
+void TypeDeclarationUnordered() :
+{}
+{
+  LOOKAHEAD(3)
+  ClassDeclaration()
+|
+  ClassExtendsDeclaration()
+}
+
+void ClassDeclaration() :
+{}
+{
+  <CLASS> Identifier() <LBRACE> ( Comment() )*
+                           ( VarDeclarationUnordered() )*
+                           ( MethodDeclarationUnordered() )*
+                       <RBRACE>
+}
+
+void ClassExtendsDeclaration() :
+{}
+{
+  "class" Identifier() "extends" Identifier()
+                       "{" ( Comment() )*
+                           ( VarDeclarationUnordered() )*
+                           ( MethodDeclarationUnordered() )*
+                       "}"
+}
+
+void VarDeclarationUnordered() :
+{}
+{
+  Type() Identifier() <SEMICOLON>
+}
+
+void MethodDeclarationUnordered() :
+{}
+{
+  <PUBLIC> Type() Identifier()
+  <LPAREN> ( FormalParameterList() )? <RPAREN>
+  <LBRACE> ( Comment() )*
+      ( LOOKAHEAD(2) VarDeclarationUnordered() )*
+      ( Statement() )* <RETURN> Expression() <SEMICOLON> <RBRACE>
+}
+
+void FormalParameterList() :
+{}
+{
+  FormalParameter() ( FormalParameterRest() )*
+}
+
+void FormalParameter() :
+{}
+{
+  Type() Identifier()
+}
+
+void FormalParameterRest() :
+{}
+{
+  "," FormalParameter()
+}
+
+void Type() :
+{}
+{
+  LOOKAHEAD(3)
+  ArrayType()
+|
+  BooleanType()
+|
+  IntegerType()
+|
+  Identifier()
+}
+
+void ArrayType() :
+{}
+{
+  <INTEGER> <LSQPAREN> <RSQPAREN>
+}
+
+void BooleanType() :
+{}
+{
+  <BOOLEAN>
+}
+
+void IntegerType() :
+{}
+{
+  <INTEGER>
+}
+
+void Statement() :
+{}
+{
+    Block()
+  |
+    LOOKAHEAD(2)
+    AssignmentStatement()
+  |
+    LOOKAHEAD(2)
+    ArrayAssignmentStatement()
+  |
+    IfStatement()
+  |
+    WhileStatement()
+  |
+    PrintStatement()
+}
+
+void Block() :
+{}
+{
+  <LBRACE> ( Statement() )* <RBRACE>
+}
+
+void AssignmentStatement() :
+{}
+{
+  Identifier() <ASSIGN> Expression() <SEMICOLON>
+}
+
+void ArrayAssignmentStatement() :
+{}
+{
+  Identifier() <LSQPAREN> Expression() <RSQPAREN> <ASSIGN> Expression() <SEMICOLON>
+}
+
+void IfStatement() :
+{}
+{
+  <IF> <LPAREN> Expression() <RPAREN> Statement() <ELSE> Statement()
+}
+
+void WhileStatement() :
+{}
+{
+  <WHILE> <LPAREN> Expression() <RPAREN> Statement()
+}
+
+void PrintStatement() :
+{}
+{
+  <PRINT> <LPAREN> Expression() <RPAREN> <SEMICOLON>
+}
+
+void Expression() :
+{}
+{
+  LOOKAHEAD( PrimaryExpression() <AND> )
+  AndExpression()
+|
+  LOOKAHEAD( PrimaryExpression() "<" )
+  CompareExpression()
+|
+  LOOKAHEAD( PrimaryExpression() "+" )
+  PlusExpression()
+|
+  LOOKAHEAD( PrimaryExpression() "-" )
+  MinusExpression()
+|
+  LOOKAHEAD( PrimaryExpression() "*" )
+  TimesExpression()
+|
+  LOOKAHEAD( PrimaryExpression() "[" )
+  ArrayLookup()
+|
+  LOOKAHEAD( PrimaryExpression() "." "length" )
+  ArrayLength()
+|
+  LOOKAHEAD( PrimaryExpression() "." Identifier() "(" )
+  MessageSend()
+|
+  PrimaryExpression()
+}
+
+void AndExpression() :
+{}
+{
+  PrimaryExpression() "&&" PrimaryExpression()
+}
+
+void CompareExpression() :
+{}
+{
+  PrimaryExpression() "<" PrimaryExpression()
+}
+
+void PlusExpression() :
+{}
+{
+  PrimaryExpression() "+" PrimaryExpression()
+}
+
+void MinusExpression() :
+{}
+{
+  PrimaryExpression() "-" PrimaryExpression()
+}
+
+void TimesExpression() :
+{}
+{
+  PrimaryExpression() "*" PrimaryExpression()
+}
+
+void ArrayLookup() :
+{}
+{
+  PrimaryExpression() "[" PrimaryExpression() "]"
+}
+
+void ArrayLength() :
+{}
+{
+  PrimaryExpression() "." "length"
+}
+
+void MessageSend() :
+{}
+{
+  PrimaryExpression() "." Identifier()
+  "(" ( ExpressionList() )? ")"
+}
+
+void ExpressionList() :
+{}
+{
+  Expression() ( ExpressionRest() )*
+}
+
+void ExpressionRest() :
+{}
+{
+  "," Expression()
+}
+
+void PrimaryExpression() :
+{}
+{
+  IntegerLiteral()
+|
+  TrueLiteral()
+|
+  FalseLiteral()
+|
+  Identifier()
+|
+  ThisExpression()
+|
+  LOOKAHEAD(3)
+  ArrayAllocationExpression()
+|
+  AllocationExpression()
+|
+  NotExpression()
+|
+  BracketExpression()
+}
+
+void IntegerLiteral() :
+{}
+{
+  <INTEGER_LITERAL>
+}
+
+
+void TrueLiteral() :
+{}
+{
+  <TRUE>
+}
+
+void FalseLiteral() :
+{}
+{
+  <FALSE>
+}
+
+void Identifier() :
+{}
+{
+  <IDENTIFIER>
+}
+
+void ThisExpression() :
+{}
+{
+  <THIS>
+}
+
+void ArrayAllocationExpression() :
+{}
+{
+  <NEW> <INTEGER> <LSQPAREN> Expression() <RSQPAREN>
+}
+
+void AllocationExpression() :
+{}
+{
+  <NEW> Identifier() <LBRACE> <LBRACE>
+}
+
+void NotExpression() :
+{}
+{
+  "!" Expression()
+}
+
+void BracketExpression() :
+{}
+{
+  <RBRACE> Expression() <LBRACE>
+}
+
+void Comment() :
+{}
+{
+  <SINGLE_LINE_COMMENT>
+| <FORMAL_COMMENT>
+| <MULTI_LINE_COMMENT>
 }
