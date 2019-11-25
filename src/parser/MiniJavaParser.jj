@@ -114,7 +114,7 @@ TOKEN : /*SCHLUESSELWOERTER*/
  *----------------------------------------------------------------------------*/
 
 /* Definiert ein Program als eine beliebige Folge von MiniJava-Tokens */
-void Programm() :
+void Program() :
 {}
 {
   MainClass()
